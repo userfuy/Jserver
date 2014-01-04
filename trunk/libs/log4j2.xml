@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="debug" strict="true" name="log4j2-config"
+               packages="org.apache.logging.log4j.test">
+    <Properties>
+        <Property name="filename">target/test.log</Property>
+    </Properties>
+    <Filter type="ThresholdFilter" level="trace"/>
+
+    <Appenders>
+        <Appender type="Console" name="STDOUT">
+            <Layout type="PatternLayout" pattern="%m MDC%X%n"/>
+            <Filters>
+                <Filter type="MarkerFilter" marker="FLOW" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <Filter type="MarkerFilter" marker="EXCEPTION" onMatch="DENY" onMismatch="ACCEPT"/>
+            </Filters>
+        </Appender>
+        <Appender type="Console" name="FLOW">
+            <Layout type="PatternLayout" pattern="%C{1}.%M %m %ex%n"/>
+            <!-- class and line number -->
+            <Filters>
+                <Filter type="MarkerFilter" marker="FLOW" onMatch="ACCEPT" onMismatch="NEUTRAL"/>
+                <Filter type="MarkerFilter" marker="EXCEPTION" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+        </Appender>
+        <Appender type="File" name="File" fileName="${filename}">
+            <Layout type="PatternLayout">
+                <Pattern>%d %p %C{1.} [%t] %m%n</Pattern>
+            </Layout>
+        </Appender>
+        <Console name="Console" target="SYSTEM_OUT">
+            <ThresholdFilter level="trace" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} %-5level %class{36} %L %M - %msg%xEx%n"/>
+        </Console>
+        <File name="log" fileName="logs/test.log" append="false">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS z} %-5level %class{36} %L %M - %msg%xEx%n"/>
+        </File>
+        <RollingFile name="RollingFile" fileName="logs/app.log"
+                     filePattern="logs/$${date:yyyy-MM}/app-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS z} %-5level %class{36} %L %M - %msg%xEx%n"/>
+            <SizeBasedTriggeringPolicy size="500 MB"/>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="Jserver.log4j.console" level="debug" additivity="false">
+            <Filter type="ThreadContextMapFilter">
+                <KeyValuePair key="test" value="123"/>
+            </Filter>
+            <AppenderRef ref="STDOUT"/>
+        </Logger>
+
+        <Logger name="Jserver.log4j.app" level="debug" additivity="false">
+            <AppenderRef ref="RollingFile"/>
+        </Logger>
+
+        <Root level="trace">
+            <AppenderRef ref="List"/>
+        </Root>
+    </Loggers>
+
+</Configuration>
